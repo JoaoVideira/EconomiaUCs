@@ -288,3 +288,29 @@ base12$IFDM<-base12$IFDM/100 #AVISO: dividir por 10000
 
 #tratamento variável estado 
 base12$estado<-as.factor(base12$estado)
+
+#Adicionando variáveis defasadas do IFDM (2015,2014)
+# FONTE:https://www.firjan.com.br/ifdm/downloads/
+#Dados sobre Índice FIRJAN de Desenvolvimento Municipal.
+IFDM<- read.csv2("IFDM.csv", sep = ";", stringsAsFactors = FALSE)
+IFDM<-IFDM[-c(1,2),]
+IFDM<-IFDM[ ,c(1:4,23,25)]
+
+str_sub(string = IFDM$Informações.do.Município , start = 1, end = 5)
+IFDM<-filter(IFDM, X.1=="MG"|X.1=="SP"|X.1=="RJ"|X.1=="ES")
+names(IFDM)<-c("CODIBGE","REGIAO","estado","municipio","IFDM-2014","IFDM-2015")  
+IFDM<-IFDM[,-2]
+IFDM<-IFDM[,-c(2,3)]
+
+basefinal<-full_join(base12,IFDM,by= "CODIBGE",na.rm=TRUE)
+
+#Retirando NA da base
+basefinal <- na.omit(basefinal)
+basefinal<-basefinal %>% distinct(municipio, .keep_all = TRUE)
+
+#tratamento variável IFDM
+basefinal[,21] <- gsub("[,]", ".",basefinal[,21])
+basefinal[,22] <- gsub("[,]", ".",basefinal[,22])
+
+basefinal$`IFDM-2014` <-as.numeric(basefinal$`IFDM-2014`)
+basefinal$`IFDM-2015` <-as.numeric(basefinal$`IFDM-2015` )

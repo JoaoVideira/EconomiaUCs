@@ -290,7 +290,7 @@ base12$IFDM<-base12$IFDM/100 #AVISO: dividir por 10000
 base12$estado<-as.factor(base12$estado)
 
 #Adicionando variáveis defasadas do IFDM (2015,2014)
-# FONTE:https://www.firjan.com.br/ifdm/downloads/
+#FONTE:https://www.firjan.com.br/ifdm/downloads/
 #Dados sobre Índice FIRJAN de Desenvolvimento Municipal.
 IFDM<- read.csv2("IFDM.csv", sep = ";", stringsAsFactors = FALSE)
 IFDM<-IFDM[-c(1,2),]
@@ -314,3 +314,26 @@ basefinal[,22] <- gsub("[,]", ".",basefinal[,22])
 
 basefinal$`IFDM-2014` <-as.numeric(basefinal$`IFDM-2014`)
 basefinal$`IFDM-2015` <-as.numeric(basefinal$`IFDM-2015` )
+
+#Adicionando base MUNIC -2015
+#Adicionando variáveis Base digitalizada (sim ou nao); tem CAR ( sim ou não)
+#FONTE:https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads
+#Dados sobre MUNIC.
+MUNIC<- read.csv2("MUNIC Ambiental 2015.csv", sep = ";", stringsAsFactors = FALSE)
+MUNIC<-MUNIC[,-3]
+
+MUNIC<-filter(MUNIC, Codigouf=="31"|Codigouf=="32"|Codigouf=="33"|Codigouf=="35")
+
+MUNIC$A1<-as.character(MUNIC$A1)
+MUNIC$A1<-str_sub(string = MUNIC$A1 , start = 1, end = 6)
+names(MUNIC)<-c("CODIBGE","CODUF","municipio"," Tem Base Digitalizada","Tem CAR")  
+MUNIC<-MUNIC[,-c(2,3)]
+MUNIC$`Tem CAR`<-as.factor(MUNIC$`Tem CAR`)
+MUNIC$` Tem Base Digitalizada` <-as.factor(MUNIC$` Tem Base Digitalizada`)
+
+basefinal1<-full_join(basefinal,MUNIC,by= "CODIBGE",na.rm=TRUE)
+
+#Retirando NA da base
+basefinal1 <- na.omit(basefinal1)
+basefinal1<-basefinal1 %>% distinct(municipio, .keep_all = TRUE)
+

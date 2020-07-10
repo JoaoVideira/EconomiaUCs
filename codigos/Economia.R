@@ -72,7 +72,6 @@ names(base)<-c("municipio","AN","estado","CODIBGE","Corpoagua")
 library(readxl)
 
 Saneamento <- read_excel("Saneamento.xlsx")
-Saneamento<-Saneamento[(Saneamento$Município!= NA),]
 
 Saneamento <- Saneamento[,-c(4,5,6)]
 names(Saneamento)<-c("CODIBGE","municipio","estado","Abastecimento agua","esgotamento","pop total","pop urbana","tx de coleta de rdo")
@@ -131,11 +130,10 @@ IFDM<- read.csv2("IFDM.csv", sep = ";", stringsAsFactors = FALSE)
 IFDM<-IFDM[-c(1,2),]
 IFDM<-IFDM[ ,c(1:4,27)]
 
-str_sub(string = strings_sub, start = 1, end = 5)
+str_sub(string = IFDM, start = 1, end = 5)
 IFDM<-filter(IFDM, X.1=="MG"|X.1=="SP"|X.1=="RJ"|X.1=="ES")
 names(IFDM)<-c("CODIBGE","REGIAO","estado","municipio","IFDM")  
 IFDM<-IFDM[,-2]
-IFDM<-IFDM[,-c(2,3)]
 
 base4<-full_join(base3,IFDM,by= "CODIBGE",na.rm=TRUE)
 
@@ -261,10 +259,10 @@ base11[,14] <- gsub("[.]", "",base11[,14])
 base11$populacao<-as.numeric(base11$populacao)
 
 base11$denpop<-base11$populacao/base11$area
-base12$denpop<-base12$populacao/(base12$area*100)
+base11$denpop<-base11$populacao/(base11$area*100)
 
 #criando variavel rebanho por hectare
-# Retirando da variável agricultura e rebanho ... que significa "Valor não disponível"
+# Retirando da variável agricultura e rebanho (...) que significa "Valor não disponível"
 base12<-filter(base11,base11$pecuaria!="...")
 base12<-filter(base12,base12$agricultura!="...")
 base12$pecuaria<-as.numeric(base12$pecuaria)
@@ -284,7 +282,7 @@ base12$desppercapita<-(base12$Despesas )/(base12$populacao)
 #tratamento variável IFDM
 base12[,9] <- gsub("[,]", "",base12[,9])
 base12$IFDM <-as.numeric(base12$IFDM)
-base12$IFDM<-base12$IFDM/100 #AVISO: dividir por 10000
+base12$IFDM<-base12$IFDM/10000 
 
 #tratamento variável estado 
 base12$estado<-as.factor(base12$estado)
@@ -313,7 +311,7 @@ basefinal[,21] <- gsub("[,]", ".",basefinal[,21])
 basefinal[,22] <- gsub("[,]", ".",basefinal[,22])
 
 basefinal$`IFDM-2014` <-as.numeric(basefinal$`IFDM-2014`)
-basefinal$`IFDM-2015` <-as.numeric(basefinal$`IFDM-2015` )
+basefinal$`IFDM-2015` <-as.numeric(basefinal$`IFDM-2015`)
 
 #Adicionando base MUNIC -2015
 #Adicionando variáveis Base digitalizada (sim ou nao); tem CAR ( sim ou não)
@@ -336,4 +334,6 @@ basefinal1<-full_join(basefinal,MUNIC,by= "CODIBGE",na.rm=TRUE)
 #Retirando NA da base
 basefinal1 <- na.omit(basefinal1)
 basefinal1<-basefinal1 %>% distinct(municipio, .keep_all = TRUE)
+
+basefinal2<-basefinal1[ ,-c(8,10,11,12,14,15)]
 

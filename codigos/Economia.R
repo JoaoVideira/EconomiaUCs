@@ -27,7 +27,7 @@ install_load("foreign")
 require(AER)
 require(ggplot2)
 library(dplyr)
-
+library(stringr)
 setwd("C:/Users/Joao/Desktop/EconomiaUCs/Base de dados")
 
 # DADOS MAPBiomas -----------------------------------------------------------
@@ -88,7 +88,7 @@ Saneamento<-Saneamento[-1669,]
 
 #alterando código dos municipios da base Saneamento
 install.packages("stringr")
-library(stringr)
+
 CODIBGE<-str_sub(base$CODIBGE, end =6) # pegar apenas os seis primeiros caracteres
 base<-cbind(base,CODIBGE)
 Saneamento<-Saneamento[,-6]
@@ -153,6 +153,7 @@ View(municipio)
 PIB<-cbind(PIB,municipio)
 PIB<-PIB[,-1]
 
+base4$municipio<-base4$municipio.x
 
 base5<-full_join(base4,PIB,by= "municipio",na.rm=TRUE)
 
@@ -277,15 +278,17 @@ base12$areaagricola<-base12$agricultura/(base12$area*100)
 base12$pibpercapita<-(base12$PIB*1000)/(base12$populacao)
 
 #Despesas pagas per capita
-base12$desppercapita<-(base12$Despesas )/(base12$populacao)
+base12$desppercapita<-(base12$Despesas)/(base12$populacao)
 
 #tratamento variável IFDM
-base12[,9] <- gsub("[,]", "",base12[,9])
+base12[,11] <- gsub("[,]", "",base12[,11])
 base12$IFDM <-as.numeric(base12$IFDM)
 base12$IFDM<-base12$IFDM/10000 
 
 #tratamento variável estado 
-base12$estado<-as.factor(base12$estado)
+base12<-base12[,-9]
+base12$estado<-as.factor(base12$estado.x)
+base12<-base12[,-5]
 
 #Adicionando variáveis defasadas do IFDM (2015,2014)
 #FONTE:https://www.firjan.com.br/ifdm/downloads/
@@ -307,8 +310,8 @@ basefinal <- na.omit(basefinal)
 basefinal<-basefinal %>% distinct(municipio, .keep_all = TRUE)
 
 #tratamento variável IFDM
-basefinal[,21] <- gsub("[,]", ".",basefinal[,21])
-basefinal[,22] <- gsub("[,]", ".",basefinal[,22])
+basefinal[,23] <- gsub("[,]", ".",basefinal[,23])
+basefinal[,24] <- gsub("[,]", ".",basefinal[,24])
 
 basefinal$`IFDM-2014` <-as.numeric(basefinal$`IFDM-2014`)
 basefinal$`IFDM-2015` <-as.numeric(basefinal$`IFDM-2015`)
@@ -335,5 +338,9 @@ basefinal1<-full_join(basefinal,MUNIC,by= "CODIBGE",na.rm=TRUE)
 basefinal1 <- na.omit(basefinal1)
 basefinal1<-basefinal1 %>% distinct(municipio, .keep_all = TRUE)
 
-basefinal2<-basefinal1[ ,-c(8,10,11,12,14,15)]
+basefinal2<-basefinal1[ ,-c(4,7,8,11:13,15:16)]
 
+# proporção de corpo de agua no municipio
+propcdagua<-basefinal2$corpodagua/(basefinal1$area*100)
+basefinal2<-cbind(basefinal2,propcdagua)
+basefinal2<-basefinal2[,-2]
